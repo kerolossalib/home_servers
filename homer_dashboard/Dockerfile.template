@@ -1,0 +1,5 @@
+# Dockerfile
+FROM b4bz/homer:latest
+
+# Copy the configuration file into the appropriate directory
+COPY config.yml /www/assets/config.yml

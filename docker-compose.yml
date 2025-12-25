@@ -1,0 +1,370 @@
+version: "2"
+volumes:
+  nginx_proxy_data:
+  nginx_proxy_letsencrypt:
+  #   homer_assets:
+  #   homer_config:
+  config:
+  esphome_config:
+  #   localtime:
+  mosquitto:
+  pihole_config: {}
+  dnsmasq_config: {}
+  tailscale: {}
+  vpn-data: {}
+  wireguard-data: {}
+  ddns-data: {}
+  jellyfin_config:
+  jellyfin_cache:
+  jellyfin_media: {}
+#   firefly_iii_upload:
+#   firefly_iii_db:
+
+networks:
+  common_network:
+    driver: bridge
+  vpn_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+  # firefly_iii:
+  #   driver: bridge
+#   kiosk_settings:
+
+services:
+  nginx-proxy-manager:
+    container_name: nginx-proxy-manager
+    hostname: nginx-proxy-manager
+    image: jc21/nginx-proxy-manager:latest
+    restart: always
+    # network_mode: "host"
+    ports:
+      - "8080:80"
+      - "81:81"
+      - "8443:443"
+    networks:
+      - common_network
+    volumes:
+      - nginx_proxy_data:/data
+      - nginx_proxy_letsencrypt:/etc/letsencrypt
+
+  local-nginx:
+    container_name: local-nginx
+    build: ./local-nginx
+    restart: always
+    ports:
+      - "80:80"
+    networks:
+      - common_network
+
+  ############################# Pi hole #########################################
+
+  # pihole:
+  #   build: pihole
+  #   cap_add:
+  #     - SYS_TTY_CONFIG
+  #     - NET_ADMIN
+  #   volumes:
+  #     - "pihole_config:/etc/pihole"
+  #     - "dnsmasq_config:/etc/dnsmasq.d"
+  #   dns:
+  #     - "127.0.0.1"
+  #     - "1.1.1.1"
+  #   # network_mode: host
+  #   ports:
+  #     - "53:53/tcp"
+  #     - "53:53/udp"
+  #     - "67:67/udp"
+  #     - "8053:80/tcp"
+  #   labels:
+  #     io.balena.features.dbus: "1"
+  #   devices:
+  #     - /dev/tty0
+  #     - /dev/tty1
+  #   tmpfs:
+  #     - /var/log/pihole
+  #   environment:
+  #     DNSMASQ_LISTENING: all
+  #     PIHOLE_DNS_: 1.1.1.1;1.0.0.1
+  #     FONTFACE: Terminus
+  #     FONTSIZE: 8x14
+  #     WEBPASSWORD: balena
+  #     VIRTUAL_HOST: balena-devices.com
+  #     WEB_BIND_ADDR: 0.0.0.0
+
+  # unbound:
+  #   build: unbound
+  #   cap_add:
+  #     - NET_ADMIN
+  #   ports:
+  #     - "5053:5053/tcp"
+  #     - "5053:5053/udp"
+
+  # # https://github.com/balena-labs-projects/fbcp
+  # # https://hub.balena.io/blocks/1792683/fbcp
+  # fbcp:
+  #   image: bh.cr/balenalabs/fbcp/1.0.4
+  #   privileged: true
+
+  # # https://github.com/balenablocks/hostname
+  # # https://hub.balena.io/blocks/1918776/hostname-rpi
+  # hostname:
+  #   image: bh.cr/g_tomas_migone1/hostname-rpi/0.2.1
+  #   restart: no
+  #   labels:
+  #     io.balena.features.supervisor-api: 1
+  #   environment:
+  #     SET_HOSTNAME: pihole
+
+  # # https://hub.docker.com/r/tailscale/tailscale
+  # # https://github.com/tailscale/tailscale/blob/main/cmd/containerboot/main.go
+  # # https://tailscale.com/kb/1282/docker
+  # # https://tailscale.com/kb/1278/tailscaled
+  # # https://tailscale.com/kb/1241/tailscale-up
+  # # https://tailscale.com/kb/1242/tailscale-serve
+  # # https://tailscale.com/kb/1311/tailscale-funnel
+  # tailscale:
+  #   image: tailscale/tailscale:v1.76.1@sha256:51d9f5f8543670ecd6b15363977876a876ac591ea45cc6adfc0bb2d07e487810
+  #   restart: unless-stopped
+  #   environment:
+  #     TS_STATE_DIR: /var/lib/tailscale
+  #     TS_SOCKET: /var/run/tailscale/tailscaled.sock
+  #     TS_USERSPACE: false
+  #     TS_AUTH_ONCE: false
+  #     TS_HOSTNAME: pi-hole
+  #     TS_EXTRA_ARGS: --accept-dns=false --reset
+  #   network_mode: host
+  #   cap_add:
+  #     - NET_ADMIN
+  #     - NET_RAW
+  #     - SYS_MODULE
+  #   labels:
+  #     io.balena.features.kernel-modules: 1
+  #   tmpfs:
+  #     - /tmp
+  #     - /run
+  #   volumes:
+  #     - tailscale:/var/lib/tailscale
+  #   entrypoint:
+  #     - /bin/sh
+  #     - -c
+  #   command:
+  #     - |
+  #       modprobe tun || true
+  #       modprobe wireguard || true
+  #       mkdir -p /dev/net
+  #       [ ! -c /dev/net/tun ] && mknod /dev/net/tun c 10 200
+  #       /usr/local/bin/containerboot
+
+  # homer_dashboard:
+  #   container_name: homer_dashboard
+  #   build: ./homer_dashboard
+  #   # network_mode: "host"
+  #   ports:
+  #     - "8080:8080"
+  #   user: 1000:1000
+  #   environment:
+  #     - INIT_ASSETS=1
+  #   volumes:
+  #     - homer_assets:/www/assets
+  #     - homer_config:/www/config
+  #   networks:
+  #     - common_network
+  # depends_on:
+  #   - homeassistant
+  #   # kiosk:
+  #   #   build: ./kiosk
+  #   #   privileged: true
+  #   #   environment:
+  #   #     LAUNCH_URL: "http://192.168.1.26:8080"
+  #   #     KIOSK: "1"
+  #   #     WINDOW_SIZE: 1980,1080
+  #   #     ENABLE_GPU: 1
+  #   #     PERSISTENT: 1
+  #   #   depends_on:
+  #   #     - homeassistant
+  #   #     - homer_dashboard
+  #   #   volumes:
+  #   #     - "kiosk_settings:/data"
+
+  # Dynamic DNS Service - Using environment variables
+  # ddns-updater:
+  #   image: qmcgaw/ddns-updater:latest
+  #   container_name: ddns-updater
+  #   restart: always
+  #   environment:
+  #     - PERIOD=5m
+  #     - UPDATE_COOLDOWN_PERIOD=5m
+  #     - PUBLICIP_FETCHERS=all
+  #     - PUBLICIP_HTTP_PROVIDERS=all
+  #     - PUBLICIPV4_HTTP_PROVIDERS=ipify,opendns
+  #     - PUBLICIPV6_HTTP_PROVIDERS=ipify
+  #     # These will be set from BalenaOS device variables
+  #     - CONFIG={"settings":[{"provider":"${DDNS_PROVIDER:-duckdns}","domain":"${DDNS_DOMAIN}","token":"${DDNS_TOKEN}","ip_version":"ipv4"}]}
+  #   networks:
+  #     - common_network
+
+  # Alternative VPN Server - WireGuard (Recommended)
+
+  # Keep your existing IPSec VPN but with modifications
+  ipsecvpnserver:
+    image: hwdsl2/ipsec-vpn-server
+    container_name: ipsec-vpn
+    restart: always
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - VPN_IPSEC_PSK=your_ipsec_psk_change_this
+      - VPN_USER=your_vpn_user
+      - VPN_PASSWORD=your_vpn_password_change_this
+      - VPN_DNS_SRV1=1.1.1.1
+      - VPN_DNS_SRV2=1.0.0.1
+      # Use your dynamic DNS domain
+      - VPN_PUBLIC_IP=casasalib.duckdns.org
+    ports:
+      - "500:500/udp"
+      - "4500:4500/udp"
+    volumes:
+      - vpn-data:/etc/ipsec.d
+    # Remove network_mode: host to avoid conflicts
+    networks:
+      - vpn_network
+      - common_network
+    sysctls:
+      - net.ipv4.ip_forward=1
+      - net.ipv4.conf.all.accept_redirects=0
+      - net.ipv4.conf.all.send_redirects=0
+    labels:
+      io.balena.features.kernel-modules: "1"
+
+  homeassistant:
+    build: homeassistant
+    container_name: homeassistant
+    hostname: homeassistant
+    ports:
+      - 8123:8123
+    networks:
+      - common_network
+    privileged: true
+    volumes:
+      - "config:/config"
+    restart: always
+
+  hass-configurator:
+    image: "causticlab/hass-configurator-docker:latest"
+    restart: always
+    ports:
+      - "3218:3218"
+    networks:
+      - common_network
+    volumes:
+      - "config:/hass-config"
+    environment:
+      - HC_BASEPATH=/hass-config
+
+  esphome:
+    container_name: esphome
+    image: esphome/esphome:latest
+    # network_mode: "host"
+    volumes:
+      - esphome_config:/config
+      # - localtime:/etc/localtime:ro
+    ports:
+      - "6052:6052"
+    networks:
+      - common_network
+    restart: always
+
+  mqtt:
+    build: mqtt
+    ports:
+      - "1883:1883"
+    restart: always
+    volumes:
+      - mosquitto:/mosquitto/data
+      # wifi-connect:
+      #   build: ./wifi-connect
+      #   network_mode: "host"
+      #   labels:
+      #     io.balena.features.dbus: "1"
+      #   cap_add:
+      #     - NET_ADMIN
+      #   environment:
+      #     DBUS_SYSTEM_BUS_ADDRESS: "unix:path=/host/run/dbus/system_bus_socket"
+
+  # fireflyiii:
+  #   image: fireflyiii/core:latest
+  #   hostname: fireflyiii
+  #   container_name: firefly_iii_core
+  #   restart: always
+  #   volumes:
+  #     - firefly_iii_upload:/var/www/html/storage/upload
+  #   env_file: .env
+  #   networks:
+  #     - firefly_iii
+  #     - common_network
+  #   ports:
+  #     - 8080:8080
+  #   depends_on:
+  #     - fireflyiii_db
+  # fireflyiii_db:
+  #   image: yobasystems/alpine-mariadb:latest
+  #   hostname: fireflyiii_db
+  #   container_name: firefly_iii_db
+  #   restart: always
+  #   env_file: ./firefly_iii/.db.env
+  #   networks:
+  #     - firefly_iii
+  #   volumes:
+  #     - firefly_iii_db:/var/lib/mysql
+  # fireflyiii_cron:
+  #   #
+  #   # To make this work, set STATIC_CRON_TOKEN in your .env file or as an environment variable and replace REPLACEME below
+  #   # The STATIC_CRON_TOKEN must be *exactly* 32 characters long
+  #   #
+  #   image: alpine
+  #   restart: always
+  #   container_name: firefly_iii_cron
+  #   command: sh -c "echo \"0 3 * * * wget -qO- http://fireflyiii:8080/api/v1/cron/REPLACEME;echo\" | crontab - && crond -f -L /dev/stdout"
+  #   networks:
+  #     - firefly_iii
+
+  jellyfin:
+    container_name: jellyfin
+    build: ./jellyfin
+    restart: unless-stopped
+    networks:
+      - common_network
+    ports:
+      - "8096:8096"
+      - "1900:1900/udp"
+      - "7359:7359/udp"
+    environment:
+      - TZ=Africa/Cairo
+      - USB_MOUNT_POINT=/data/media/usb
+      - USB_DEVICE=/dev/sda2
+      - USB_POLL_INTERVAL=5
+      - NET_SHARE_MOUNT_POINT=/data/media/net
+    privileged: true
+    volumes:
+      - jellyfin_config:/config
+      - jellyfin_cache:/cache
+      - jellyfin_media:/data/media
+
+  nas:
+    container_name: nas
+    build: ./nas
+    restart: unless-stopped
+    privileged: true
+    networks:
+      - common_network
+    ports:
+      - "445:445"
+    environment:
+      - USB_DEVICE=/dev/sda2
+      - USB_MOUNT_POINT=/share
+      - USB_POLL_INTERVAL=5
+      - NAS_USER=nas
+      - NAS_SHARE_NAME=NAS
+      - NAS_WORKGROUP=WORKGROUP

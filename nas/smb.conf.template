@@ -1,0 +1,17 @@
+[global]
+   workgroup = ${NAS_WORKGROUP}
+   server string = ${NAS_SERVER_NAME}
+   map to guest = Bad User
+   disable netbios = yes
+   smb ports = 445
+   server role = standalone server
+   log file = /var/log/samba/log.%m
+   max log size = 50
+
+[${NAS_SHARE_NAME}]
+   path = /share
+   browseable = yes
+   writable = yes
+   valid users = ${NAS_USER}
+   create mask = 0664
+   directory mask = 0775

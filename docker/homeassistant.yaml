@@ -1,0 +1,52 @@
+version: "2"
+volumes:
+  homer_config:
+  config:
+  esphome_config:
+  localtime:
+  mosquitto:
+
+services:
+  homeassistant:
+    build: homeassistant
+    ports:
+      - 8123:8123
+    networks:
+      - common_network
+    privileged: true
+    volumes:
+      - "config:/config"
+    restart: always
+
+  hass-configurator:
+    image: "causticlab/hass-configurator-docker:latest"
+    restart: always
+    ports:
+      - "3218:3218"
+    networks:
+      - common_network
+    volumes:
+      - "config:/hass-config"
+    environment:
+      - HC_BASEPATH=/hass-config
+
+  esphome:
+    container_name: esphome
+    image: esphome/esphome:latest
+    # network_mode: "host"
+    volumes:
+      - esphome_config:/config
+      # - localtime:/etc/localtime:ro
+    ports:
+      - "6052:6052"
+    networks:
+      - common_network
+    restart: always
+
+  mqtt:
+    build: mqtt
+    ports:
+      - "1883:1883"
+    restart: always
+    volumes:
+      - mosquitto:/mosquitto/data
