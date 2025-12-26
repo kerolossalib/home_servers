@@ -27,6 +27,9 @@ if ! id "$NAS_USER" >/dev/null 2>&1; then
   adduser --disabled-password --gecos "" "$NAS_USER"
 fi
 
+NAS_UID="$(id -u "$NAS_USER")"
+NAS_GID="$(id -g "$NAS_USER")"
+
 echo "$NAS_USER:$NAS_PASS" | chpasswd
 printf '%s\n%s\n' "$NAS_PASS" "$NAS_PASS" | smbpasswd -a -s "$NAS_USER" >/dev/null
 
@@ -62,7 +65,23 @@ try_mount_usb() {
     return 1
   fi
 
+  fs_type="$(blkid -o value -s TYPE "$dev" 2>/dev/null || true)"
+  mount_opts=""
+  case "$fs_type" in
+    exfat|vfat|fat|ntfs|ntfs3)
+      mount_opts="uid=$NAS_UID,gid=$NAS_GID,fmask=0002,dmask=0002"
+      ;;
+  esac
+
   log "attempting to mount USB $dev at $USB_MOUNT_POINT"
+  if [ -n "$mount_opts" ]; then
+    if mount -o "$mount_opts" "$dev" "$USB_MOUNT_POINT"; then
+      log "mounted USB $dev at $USB_MOUNT_POINT with $fs_type options"
+      return 0
+    fi
+    log "mount with options failed for $dev; retrying without options"
+  fi
+
   if mount "$dev" "$USB_MOUNT_POINT"; then
     log "mounted USB $dev at $USB_MOUNT_POINT"
     return 0
