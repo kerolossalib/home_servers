@@ -12,8 +12,8 @@
    path = /share
    browseable = yes
    writable = yes
-   force user = ${NAS_USER}
-   force group = ${NAS_USER}
+   force user = ${NAS_FORCE_USER}
+   force group = ${NAS_FORCE_GROUP}
    inherit permissions = yes
    valid users = ${NAS_USER}
    create mask = 0664

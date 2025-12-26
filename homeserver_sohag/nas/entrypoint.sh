@@ -10,6 +10,8 @@ NAS_PASS="${NAS_PASS:-}"
 NAS_SHARE_NAME="${NAS_SHARE_NAME:-NAS}"
 NAS_WORKGROUP="${NAS_WORKGROUP:-WORKGROUP}"
 NAS_SERVER_NAME="${NAS_SERVER_NAME:-balena-nas}"
+NAS_FORCE_USER="${NAS_FORCE_USER:-root}"
+NAS_FORCE_GROUP="${NAS_FORCE_GROUP:-root}"
 
 USB_MOUNT_POINT="${USB_MOUNT_POINT:-/share}"
 USB_DEVICE="${USB_DEVICE:-}"
@@ -33,7 +35,7 @@ NAS_GID="$(id -g "$NAS_USER")"
 echo "$NAS_USER:$NAS_PASS" | chpasswd
 printf '%s\n%s\n' "$NAS_PASS" "$NAS_PASS" | smbpasswd -a -s "$NAS_USER" >/dev/null
 
-export NAS_USER NAS_SHARE_NAME NAS_WORKGROUP NAS_SERVER_NAME
+export NAS_USER NAS_SHARE_NAME NAS_WORKGROUP NAS_SERVER_NAME NAS_FORCE_USER NAS_FORCE_GROUP
 envsubst < /etc/samba/smb.conf.template > /etc/samba/smb.conf
 
 is_mounted() {
