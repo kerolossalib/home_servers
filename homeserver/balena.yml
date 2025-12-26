@@ -1,0 +1,33 @@
+name: Home Assistant
+description: >-
+  Open source home automation that puts local control and privacy first; a Home
+  Assistant, HASS Config, and MQTT stack.
+type: sw.application
+assets:
+  repository:
+    type: blob.asset
+    data:
+      url: "https://github.com/balena-io-experimental/balena-homeassistant"
+  logo:
+    type: blob.asset
+    data:
+      url: >-
+        https://raw.githubusercontent.com/balena-io-experimental/balena-homeassistant/master/logo.png
+data:
+  defaultDeviceType: raspberrypi5
+  supportedDeviceTypes:
+    - raspberrypi2
+    - raspberrypi3
+    - raspberrypi4-64
+    - fincm3
+    - beaglebone-black
+  applicationConfigVariables:
+    - BALENA_HOST_CONFIG_gpu_mem: 512
+  applicationEnvironmentVariables:
+    - LAUNCH_URL: "http://homeassistant:8123/"
+    - KIOSK: "2"
+    - GALLERY_URL: ""
+    - WEBPASSWORD: "balena"
+    - PIHOLE_DNS_: "1.1.1.1;1.0.0.1"
+    - FBCP_DISPLAY: ""
+version: 0.0.11

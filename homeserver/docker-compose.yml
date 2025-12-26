@@ -1,4 +1,4 @@
-version: "2"
+version: "2.4"
 volumes:
   nginx_proxy_data:
   nginx_proxy_letsencrypt:
@@ -6,28 +6,22 @@ volumes:
   #   homer_config:
   config:
   esphome_config:
+  jellyfin_config:
+  jellyfin_cache:
+  jellyfin_media:
   #   localtime:
-  mosquitto:
+  #   mosquitto:
   pihole_config: {}
   dnsmasq_config: {}
   tailscale: {}
-  vpn-data: {}
-  wireguard-data: {}
-  ddns-data: {}
-  jellyfin_config:
-  jellyfin_cache:
-  jellyfin_media: {}
+  adguard_work: {}
+  adguard_conf: {}
 #   firefly_iii_upload:
 #   firefly_iii_db:
 
 networks:
   common_network:
     driver: bridge
-  vpn_network:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
   # firefly_iii:
   #   driver: bridge
 #   kiosk_settings:
@@ -40,25 +34,35 @@ services:
     restart: always
     # network_mode: "host"
     ports:
-      - "8080:80"
+      - "80:80"
       - "81:81"
-      - "8443:443"
+      - "443:443"
     networks:
       - common_network
     volumes:
       - nginx_proxy_data:/data
       - nginx_proxy_letsencrypt:/etc/letsencrypt
 
-  local-nginx:
-    container_name: local-nginx
-    build: ./local-nginx
-    restart: always
-    ports:
-      - "80:80"
+  ############################# Pi hole #########################################
+
+  # Pi-hole and AdGuard Home both bind port 53 for DNS. Enable only one.
+
+  adguardhome:
+    container_name: adguardhome
+    build: ./adguardhome
+    restart: unless-stopped
     networks:
       - common_network
-
-  ############################# Pi hole #########################################
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "3000:3000"
+    volumes:
+      - adguard_work:/opt/adguardhome/work
+      - adguard_conf:/opt/adguardhome/conf
+    environment:
+      - ADGUARD_CONFIG_OVERWRITE=1
+      - TZ=UTC
 
   # pihole:
   #   build: pihole
@@ -101,14 +105,14 @@ services:
   #     - "5053:5053/tcp"
   #     - "5053:5053/udp"
 
-  # # https://github.com/balena-labs-projects/fbcp
-  # # https://hub.balena.io/blocks/1792683/fbcp
+  # https://github.com/balena-labs-projects/fbcp
+  # https://hub.balena.io/blocks/1792683/fbcp
   # fbcp:
   #   image: bh.cr/balenalabs/fbcp/1.0.4
   #   privileged: true
 
-  # # https://github.com/balenablocks/hostname
-  # # https://hub.balena.io/blocks/1918776/hostname-rpi
+  # https://github.com/balenablocks/hostname
+  # https://hub.balena.io/blocks/1918776/hostname-rpi
   # hostname:
   #   image: bh.cr/g_tomas_migone1/hostname-rpi/0.2.1
   #   restart: no
@@ -117,13 +121,13 @@ services:
   #   environment:
   #     SET_HOSTNAME: pihole
 
-  # # https://hub.docker.com/r/tailscale/tailscale
-  # # https://github.com/tailscale/tailscale/blob/main/cmd/containerboot/main.go
-  # # https://tailscale.com/kb/1282/docker
-  # # https://tailscale.com/kb/1278/tailscaled
-  # # https://tailscale.com/kb/1241/tailscale-up
-  # # https://tailscale.com/kb/1242/tailscale-serve
-  # # https://tailscale.com/kb/1311/tailscale-funnel
+  # https://hub.docker.com/r/tailscale/tailscale
+  # https://github.com/tailscale/tailscale/blob/main/cmd/containerboot/main.go
+  # https://tailscale.com/kb/1282/docker
+  # https://tailscale.com/kb/1278/tailscaled
+  # https://tailscale.com/kb/1241/tailscale-up
+  # https://tailscale.com/kb/1242/tailscale-serve
+  # https://tailscale.com/kb/1311/tailscale-funnel
   # tailscale:
   #   image: tailscale/tailscale:v1.76.1@sha256:51d9f5f8543670ecd6b15363977876a876ac591ea45cc6adfc0bb2d07e487810
   #   restart: unless-stopped
@@ -188,60 +192,8 @@ services:
   #   #   volumes:
   #   #     - "kiosk_settings:/data"
 
-  # Dynamic DNS Service - Using environment variables
-  # ddns-updater:
-  #   image: qmcgaw/ddns-updater:latest
-  #   container_name: ddns-updater
-  #   restart: always
-  #   environment:
-  #     - PERIOD=5m
-  #     - UPDATE_COOLDOWN_PERIOD=5m
-  #     - PUBLICIP_FETCHERS=all
-  #     - PUBLICIP_HTTP_PROVIDERS=all
-  #     - PUBLICIPV4_HTTP_PROVIDERS=ipify,opendns
-  #     - PUBLICIPV6_HTTP_PROVIDERS=ipify
-  #     # These will be set from BalenaOS device variables
-  #     - CONFIG={"settings":[{"provider":"${DDNS_PROVIDER:-duckdns}","domain":"${DDNS_DOMAIN}","token":"${DDNS_TOKEN}","ip_version":"ipv4"}]}
-  #   networks:
-  #     - common_network
-
-  # Alternative VPN Server - WireGuard (Recommended)
-
-  # Keep your existing IPSec VPN but with modifications
-  ipsecvpnserver:
-    image: hwdsl2/ipsec-vpn-server
-    container_name: ipsec-vpn
-    restart: always
-    cap_add:
-      - NET_ADMIN
-    environment:
-      - VPN_IPSEC_PSK=your_ipsec_psk_change_this
-      - VPN_USER=your_vpn_user
-      - VPN_PASSWORD=your_vpn_password_change_this
-      - VPN_DNS_SRV1=1.1.1.1
-      - VPN_DNS_SRV2=1.0.0.1
-      # Use your dynamic DNS domain
-      - VPN_PUBLIC_IP=casasalib.duckdns.org
-    ports:
-      - "500:500/udp"
-      - "4500:4500/udp"
-    volumes:
-      - vpn-data:/etc/ipsec.d
-    # Remove network_mode: host to avoid conflicts
-    networks:
-      - vpn_network
-      - common_network
-    sysctls:
-      - net.ipv4.ip_forward=1
-      - net.ipv4.conf.all.accept_redirects=0
-      - net.ipv4.conf.all.send_redirects=0
-    labels:
-      io.balena.features.kernel-modules: "1"
-
   homeassistant:
     build: homeassistant
-    container_name: homeassistant
-    hostname: homeassistant
     ports:
       - 8123:8123
     networks:
@@ -251,17 +203,17 @@ services:
       - "config:/config"
     restart: always
 
-  hass-configurator:
-    image: "causticlab/hass-configurator-docker:latest"
-    restart: always
-    ports:
-      - "3218:3218"
-    networks:
-      - common_network
-    volumes:
-      - "config:/hass-config"
-    environment:
-      - HC_BASEPATH=/hass-config
+  # hass-configurator:
+  #   image: "causticlab/hass-configurator-docker:latest"
+  #   restart: always
+  #   ports:
+  #     - "3218:3218"
+  #   networks:
+  #     - common_network
+  #   volumes:
+  #     - "config:/hass-config"
+  #   environment:
+  #     - HC_BASEPATH=/hass-config
 
   esphome:
     container_name: esphome
@@ -272,26 +224,50 @@ services:
       # - localtime:/etc/localtime:ro
     ports:
       - "6052:6052"
-    networks:
-      - common_network
+    network_mode: "host"
+    # networks:
+    #   - common_network
     restart: always
 
-  mqtt:
-    build: mqtt
+  jellyfin:
+    container_name: jellyfin
+    build: ./jellyfin
+    restart: unless-stopped
+    networks:
+      - common_network
+    privileged: true
     ports:
-      - "1883:1883"
-    restart: always
+      - "8096:8096"
+      - "7359:7359/udp"
+      - "1900:1900/udp"
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=UTC
+      - USB_MOUNT_POINT=/data/media/usb
+      - USB_DEVICE=/dev/disk/by-uuid/694B-FB50
+      - USB_POLL_INTERVAL=5
     volumes:
-      - mosquitto:/mosquitto/data
-      # wifi-connect:
-      #   build: ./wifi-connect
-      #   network_mode: "host"
-      #   labels:
-      #     io.balena.features.dbus: "1"
-      #   cap_add:
-      #     - NET_ADMIN
-      #   environment:
-      #     DBUS_SYSTEM_BUS_ADDRESS: "unix:path=/host/run/dbus/system_bus_socket"
+      - jellyfin_config:/config
+      - jellyfin_cache:/cache
+      - jellyfin_media:/data/media
+
+  # mqtt:
+  # build: mqtt
+  # ports:
+  #   - "1883:1883"
+  # restart: always
+  # volumes:
+  #   - mosquitto:/mosquitto/data
+  #   # wifi-connect:
+  #   #   build: ./wifi-connect
+  #   #   network_mode: "host"
+  #   #   labels:
+  #   #     io.balena.features.dbus: "1"
+  #   #   cap_add:
+  #   #     - NET_ADMIN
+  #   #   environment:
+  #   #     DBUS_SYSTEM_BUS_ADDRESS: "unix:path=/host/run/dbus/system_bus_socket"
 
   # fireflyiii:
   #   image: fireflyiii/core:latest
@@ -329,42 +305,3 @@ services:
   #   command: sh -c "echo \"0 3 * * * wget -qO- http://fireflyiii:8080/api/v1/cron/REPLACEME;echo\" | crontab - && crond -f -L /dev/stdout"
   #   networks:
   #     - firefly_iii
-
-  jellyfin:
-    container_name: jellyfin
-    build: ./jellyfin
-    restart: unless-stopped
-    networks:
-      - common_network
-    ports:
-      - "8096:8096"
-      - "1900:1900/udp"
-      - "7359:7359/udp"
-    environment:
-      - TZ=Africa/Cairo
-      - USB_MOUNT_POINT=/data/media/usb
-      - USB_DEVICE=/dev/sda2
-      - USB_POLL_INTERVAL=5
-      - NET_SHARE_MOUNT_POINT=/data/media/net
-    privileged: true
-    volumes:
-      - jellyfin_config:/config
-      - jellyfin_cache:/cache
-      - jellyfin_media:/data/media
-
-  nas:
-    container_name: nas
-    build: ./nas
-    restart: unless-stopped
-    privileged: true
-    networks:
-      - common_network
-    ports:
-      - "445:445"
-    environment:
-      - USB_DEVICE=/dev/sda2
-      - USB_MOUNT_POINT=/share
-      - USB_POLL_INTERVAL=5
-      - NAS_USER=nas
-      - NAS_SHARE_NAME=NAS
-      - NAS_WORKGROUP=WORKGROUP

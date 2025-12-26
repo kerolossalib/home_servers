@@ -1,0 +1,14 @@
+# FROM bh.cr/balenalabs/browser-%%BALENA_ARCH%%/2.4.2
+FROM bh.cr/balenalabs/browser-%%BALENA_ARCH%%
+
+
+# # Install necessary packages
+# RUN apt-get update && apt-get install -y xserver-xorg-video-fbdev
+
+# # Copy custom entrypoint script if needed
+# COPY start.sh /usr/src/app/start.sh
+
+# # Ensure the script is executable
+# RUN chmod +x /usr/src/app/start.sh
+
+# CMD ["/usr/src/app/start.sh"]
