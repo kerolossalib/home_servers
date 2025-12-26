@@ -9,6 +9,10 @@ MOUNT_POINT="${USB_MOUNT_POINT:-/data/media/usb}"
 DEVICE="${USB_DEVICE:-}"
 DEVICE_GLOB="${USB_DEVICE_GLOB:-/dev/sd*1}"
 POLL_INTERVAL="${USB_POLL_INTERVAL:-5}"
+USB_UID="${USB_UID:-1000}"
+USB_GID="${USB_GID:-1000}"
+USB_FMASK="${USB_FMASK:-0002}"
+USB_DMASK="${USB_DMASK:-0002}"
 
 NET_TYPE="${NET_SHARE_TYPE:-}"
 NET_HOST="${NET_SHARE_HOST:-}"
@@ -51,7 +55,23 @@ try_mount_usb() {
     return 1
   fi
 
+  fs_type="$(blkid -o value -s TYPE "$dev" 2>/dev/null || true)"
+  mount_opts=""
+  case "$fs_type" in
+    exfat|vfat|fat|ntfs|ntfs3)
+      mount_opts="uid=$USB_UID,gid=$USB_GID,fmask=$USB_FMASK,dmask=$USB_DMASK"
+      ;;
+  esac
+
   log "attempting to mount USB $dev at $MOUNT_POINT"
+  if [ -n "$mount_opts" ]; then
+    if mount -o "$mount_opts" "$dev" "$MOUNT_POINT"; then
+      log "mounted USB $dev at $MOUNT_POINT with $fs_type options"
+      return 0
+    fi
+    log "mount with options failed for $dev; retrying without options"
+  fi
+
   if mount "$dev" "$MOUNT_POINT"; then
     log "mounted USB $dev at $MOUNT_POINT"
     return 0
