@@ -245,7 +245,7 @@ services:
       - PGID=0
       - TZ=UTC
       - USB_MOUNT_POINT=/data/media/usb
-      - USB_DEVICE=/dev/disk/by-uuid/694B-FB50
+      - USB_DEVICE_GLOB=/dev/disk/by-id/usb-*part1
       - USB_POLL_INTERVAL=5
     volumes:
       - jellyfin_config:/config

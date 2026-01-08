@@ -364,7 +364,7 @@ services:
     environment:
       - TZ=Africa/Cairo
       - USB_MOUNT_POINT=/data/media/usb
-      - USB_DEVICE=/dev/sda2
+      - USB_DEVICE_GLOB=/dev/disk/by-id/usb-*part1
       - USB_POLL_INTERVAL=5
       - NET_SHARE_MOUNT_POINT=/data/media/net
     privileged: true
@@ -383,7 +383,7 @@ services:
     ports:
       - "445:445"
     environment:
-      - USB_DEVICE=/dev/sda2
+      - USB_DEVICE_GLOB=/dev/disk/by-id/usb-*part1
       - USB_MOUNT_POINT=/share
       - USB_POLL_INTERVAL=5
       - NAS_USER=nas
