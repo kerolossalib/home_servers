@@ -13,6 +13,7 @@ USB_UID="${USB_UID:-1000}"
 USB_GID="${USB_GID:-1000}"
 USB_FMASK="${USB_FMASK:-0002}"
 USB_DMASK="${USB_DMASK:-0002}"
+USB_ENABLED="${USB_ENABLED:-1}"
 
 NET_TYPE="${NET_SHARE_TYPE:-}"
 NET_HOST="${NET_SHARE_HOST:-}"
@@ -131,7 +132,7 @@ try_mount_net() {
 
 mount_loop() {
   while true; do
-    if ! is_mounted "$MOUNT_POINT"; then
+    if [ "$USB_ENABLED" = "1" ] && ! is_mounted "$MOUNT_POINT"; then
       try_mount_usb || true
     fi
     if [ -n "$NET_TYPE" ] && ! is_mounted "$NET_MOUNT_POINT"; then

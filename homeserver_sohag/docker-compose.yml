@@ -363,15 +363,21 @@ services:
       - "7359:7359/udp"
     environment:
       - TZ=Africa/Cairo
-      - USB_MOUNT_POINT=/data/media/usb
-      - USB_DEVICE_GLOB=/dev/disk/by-id/usb-*part1
-      - USB_POLL_INTERVAL=5
+      - USB_ENABLED=0
+      - NET_SHARE_TYPE=smb
+      - NET_SHARE_HOST=nas
+      - NET_SHARE_PATH=/NAS
+      - NET_SHARE_USER=nas
+      - NET_SHARE_PASS=homeserver
+      - NET_SHARE_DOMAIN=WORKGROUP
       - NET_SHARE_MOUNT_POINT=/data/media/net
     privileged: true
     volumes:
       - jellyfin_config:/config
       - jellyfin_cache:/cache
       - jellyfin_media:/data/media
+    depends_on:
+      - nas
 
   nas:
     container_name: nas
@@ -387,5 +393,8 @@ services:
       - USB_MOUNT_POINT=/share
       - USB_POLL_INTERVAL=5
       - NAS_USER=nas
+      - NAS_PASS=homeserver
       - NAS_SHARE_NAME=NAS
       - NAS_WORKGROUP=WORKGROUP
+      - NAS_FORCE_USER=nas
+      - NAS_FORCE_GROUP=nas

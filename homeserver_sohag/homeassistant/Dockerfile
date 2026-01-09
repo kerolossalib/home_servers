@@ -1,4 +1,4 @@
-FROM homeassistant/home-assistant:stable
+FROM homeassistant/raspberrypi3-homeassistant:stable
 
 ENV UDEV=on
 
