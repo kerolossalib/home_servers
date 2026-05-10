@@ -12,22 +12,25 @@ BEFORE=$(git rev-parse HEAD)
 git pull origin main 2>> "$LOG_FILE" || { echo "[$(date)] ERRORE: git pull fallito" >> "$LOG_FILE"; exit 1; }
 AFTER=$(git rev-parse HEAD)
 
-if [ "$BEFORE" = "$AFTER" ]; then
+DEPLOY_ALL=false
+if [ "$1" = "--all" ]; then
+    DEPLOY_ALL=true
+elif [ "$BEFORE" = "$AFTER" ] && [ "$DEPLOY_ALL" = false ]; then
     exit 0
 fi
 
-echo "[$(date)] $BEFORE -> $AFTER" >> "$LOG_FILE"
+echo "[$(date)] $BEFORE -> $AFTER (all=$DEPLOY_ALL)" >> "$LOG_FILE"
 
 CHANGED=$(git diff --name-only "$BEFORE" "$AFTER")
 
 for service in "$SYNOLOGY_DIR"/services/*/; do
     [ -d "$service" ] || continue
     service_name=$(basename "$service")
-    if echo "$CHANGED" | grep -q "^synology/services/$service_name/"; then
+    if [ "$DEPLOY_ALL" = true ] || echo "$CHANGED" | grep -q "^synology/services/$service_name/"; then
         echo "[$(date)] Deploy $service_name..." >> "$LOG_FILE"
         cd "$service"
-        docker compose pull 2>> "$LOG_FILE"
-        docker compose up -d --remove-orphans 2>> "$LOG_FILE"
+        sudo docker-compose pull 2>> "$LOG_FILE"
+        sudo docker-compose up -d --remove-orphans 2>> "$LOG_FILE"
         echo "[$(date)] $service_name done" >> "$LOG_FILE"
     fi
 done
