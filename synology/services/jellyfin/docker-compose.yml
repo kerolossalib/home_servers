@@ -1,0 +1,21 @@
+services:
+  jellyfin:
+    container_name: jellyfin
+    image: jellyfin/jellyfin:latest
+    restart: unless-stopped
+    ports:
+      - "8096:8096"
+      - "7359:7359/udp"
+      - "1900:1900/udp"
+    environment:
+      - PUID=1026
+      - PGID=100
+      - TZ=Europe/Rome
+    volumes:
+      - jellyfin_config:/config
+      - jellyfin_cache:/cache
+      - /volume1/media:/data/media:ro
+
+volumes:
+  jellyfin_config:
+  jellyfin_cache:

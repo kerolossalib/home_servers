@@ -1,0 +1,13 @@
+services:
+  esphome:
+    container_name: esphome
+    image: esphome/esphome:latest
+    restart: always
+    network_mode: host
+    volumes:
+      - esphome_config:/config
+    environment:
+      - TZ=Europe/Rome
+
+volumes:
+  esphome_config:
