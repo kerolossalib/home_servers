@@ -10,7 +10,6 @@ services:
     volumes:
       - nginx_proxy_data:/data
       - nginx_proxy_letsencrypt:/etc/letsencrypt
-
 volumes:
   nginx_proxy_data:
   nginx_proxy_letsencrypt:
