@@ -1,0 +1,6 @@
+services:
+  cloudflared:
+    container_name: cloudflared
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token eyJhIjoiZDgxNjhhMDc5NWI2OTFjYzk4YzdhOTYzZjE4NDhkOGIiLCJ0IjoiMjZmOTZkNmQtYWFkMC00M2I3LThmOWMtMjMwMjZkYzExMzAyIiwicyI6ImZDcURJOGM5MzQzQlRia3c2RkZLUW1GM3lua0dvbWNmWStNbis3amdzQ289In0=
+    restart: unless-stopped

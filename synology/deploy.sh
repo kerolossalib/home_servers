@@ -5,6 +5,7 @@ set -e
 REPO_DIR="/volume1/docker/home_servers"
 SYNOLOGY_DIR="$REPO_DIR/synology"
 LOG_FILE="$SYNOLOGY_DIR/deploy.log"
+COMPOSE_PROJECT_NAME=homelab
 
 cd "$REPO_DIR" || { echo "[$(date)] ERRORE: $REPO_DIR non trovato" >> "$LOG_FILE"; exit 1; }
 
