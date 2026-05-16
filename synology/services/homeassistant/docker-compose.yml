@@ -7,7 +7,4 @@ services:
       - "8123:8123"
     privileged: true
     volumes:
-      - homeassistant_config:/config
-
-volumes:
-  homeassistant_config:
+      - ./config:/config
