@@ -7,7 +7,7 @@ services:
       - "5002:5000"
     volumes:
       - kavita_config:/kavita/config
-      - /volume1/media:/media:ro
+      - /volume1/books:/books:ro
     environment:
       - TZ=Europe/Rome
 
