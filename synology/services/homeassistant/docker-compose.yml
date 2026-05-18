@@ -1,10 +1,12 @@
 services:
   homeassistant:
     container_name: homeassistant
-    image: homeassistant/home-assistant:stable
+    image: lscr.io/linuxserver/homeassistant:latest
     restart: unless-stopped
     network_mode: host
     volumes:
       - ./config:/config
     environment:
       - TZ=Europe/Rome
+      - PUID=911
+      - PGID=911
