@@ -1,0 +1,14 @@
+services:
+  jellyseerr:
+    container_name: jellyseerr
+    image: fallenbagel/jellyseerr:latest
+    restart: unless-stopped
+    ports:
+      - "5055:5055"
+    volumes:
+      - jellyseerr_config:/app/config
+    environment:
+      - TZ=Europe/Rome
+
+volumes:
+  jellyseerr_config:

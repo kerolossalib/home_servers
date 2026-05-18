@@ -1,0 +1,15 @@
+services:
+  kavita:
+    container_name: kavita
+    image: kizaing/kavita:latest
+    restart: unless-stopped
+    ports:
+      - "5002:5000"
+    volumes:
+      - kavita_config:/kavita/config
+      - /volume1/media:/media:ro
+    environment:
+      - TZ=Europe/Rome
+
+volumes:
+  kavita_config:
