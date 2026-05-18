@@ -14,4 +14,11 @@ http:
   trusted_proxies:
     - 127.0.0.1
     - 172.16.0.0/12
+    - 192.168.0.0/24
     - 10.0.0.0/8
+
+camera:
+  - platform: generic
+    name: "iCam 365"
+    stream_source: !secret camera_rtsp_url
+    verify_ssl: false
