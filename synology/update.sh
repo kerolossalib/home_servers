@@ -14,8 +14,8 @@ for service in "$SYNOLOGY_DIR"/services/*/; do
     service_name=$(basename "$service")
     echo "--- $service_name ---"
     cd "$service"
-    sudo docker-compose pull
-    sudo docker-compose up -d --remove-orphans
+    /usr/local/bin/docker-compose pull
+    /usr/local/bin/docker-compose up -d --remove-orphans
     echo "--- $service_name done ---"
 done
 

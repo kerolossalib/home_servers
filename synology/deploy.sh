@@ -30,8 +30,8 @@ for service in "$SYNOLOGY_DIR"/services/*/; do
     if [ "$DEPLOY_ALL" = true ] || echo "$CHANGED" | grep -q "^synology/services/$service_name/"; then
         echo "[$(date)] Deploy $service_name..." >> "$LOG_FILE"
         cd "$service"
-        sudo docker-compose pull 2>> "$LOG_FILE"
-        sudo docker-compose up -d --remove-orphans 2>> "$LOG_FILE"
+        /usr/local/bin/docker-compose pull 2>> "$LOG_FILE"
+        /usr/local/bin/docker-compose up -d --remove-orphans 2>> "$LOG_FILE"
         echo "[$(date)] $service_name done" >> "$LOG_FILE"
     fi
 done

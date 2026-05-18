@@ -1,0 +1,11 @@
+# Sensitive & auto-generated — do not commit
+.storage/
+secrets.yaml
+*.db
+*.db-shm
+*.db-wal
+home-assistant.log*
+deps/
+tts/
+backups/
+custom_components/
