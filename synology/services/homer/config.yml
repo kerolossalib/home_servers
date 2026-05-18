@@ -1,0 +1,69 @@
+title: "Casa Salib"
+subtitle: "Homelab Dashboard"
+logo: "logo.png"
+
+header: true
+footer: false
+
+theme: default
+colors:
+  light:
+    highlight-primary: "#3367d6"
+    highlight-secondary: "#4285f4"
+    highlight-hover: "#5a95f5"
+    background: "#f2f4f8"
+    card-background: "#ffffff"
+    text: "#363636"
+    text-header: "#ffffff"
+    text-title: "#303030"
+    text-subtitle: "#424242"
+    card-shadow: rgba(0, 0, 0, 0.1)
+    link-hover: "#363636"
+
+services:
+  - name: "Media"
+    icon: "fas fa-film"
+    items:
+      - name: "Jellyfin"
+        logo: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/jellyfin.png"
+        subtitle: "Media server"
+        url: "http://192.168.0.154:8096"
+        target: "_blank"
+      - name: "Jellyseerr"
+        logo: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/jellyseerr.png"
+        subtitle: "Richiedi film e serie"
+        url: "http://192.168.0.154:5055"
+        target: "_blank"
+      - name: "Kavita"
+        logo: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/kavita.png"
+        subtitle: "Ebook e manga"
+        url: "http://192.168.0.154:5002"
+        target: "_blank"
+
+  - name: "Smart Home"
+    icon: "fas fa-home"
+    items:
+      - name: "Home Assistant"
+        logo: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/home-assistant.png"
+        subtitle: "Automazione casa"
+        url: "http://192.168.0.154:8123"
+        target: "_blank"
+      - name: "ESPHome"
+        logo: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/esphome.png"
+        subtitle: "Dispositivi ESP"
+        url: "http://192.168.0.154:6052"
+        target: "_blank"
+
+  - name: "Rete & Monitoring"
+    icon: "fas fa-network-wired"
+    items:
+      - name: "AdGuard Home"
+        logo: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/adguard-home.png"
+        subtitle: "DNS e ad-blocking"
+        url: "http://192.168.0.154:3001"
+        target: "_blank"
+      - name: "Uptime Kuma"
+        logo: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/uptime-kuma.png"
+        subtitle: "Monitoring servizi"
+        url: "http://192.168.0.154:3002"
+        target: "_blank"
